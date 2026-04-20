@@ -45,13 +45,22 @@ const PROJECTS = [
     overview:
       "Uncovered a 33% gap between perceived and actual sleep quality by analyzing 15,000+ physiological measurements against patient-reported sleep logs queried using SQL. This project explores the emerging phenomenon of 'orthosomnia' — anxiety caused by wearable sleep data.",
     sections: [
-      { heading: "The Problem", body: "Wearable devices promise better sleep insights, but growing evidence suggests they can actually worsen sleep anxiety. Patients fixate on metrics, creating a disconnect between how they feel and what their devices report. I wanted to quantify this gap and identify who's most at risk." },
-      { heading: "Approach & Methodology", body: "I analyzed 15,000+ physiological measurements from Fitbit devices against patient-reported sleep quality logs. Using SQL for data extraction and Scikit-learn for clustering, I segmented users into clinically meaningful sleep profiles." },
+      { heading: "The Problem", body: "Wearable devices promise better sleep insights." },
+      { heading: "Approach", body: "Used SQL and Scikit-learn to cluster users by sleep profile." },
     ],
     github: "https://github.com/kyu976/Mind-Body-Synch-Coach",
   },
 ];
-function App() { return <div style={{background:'#0C0C0C',color:'white',minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center'}}>Loading...</div>; }
+
+function tagStyle(c) {
+  if (c === "warm") return "bg-orange-500/10 text-orange-400";
+  if (c === "cool") return "bg-blue-400/10 text-blue-400";
+  return "bg-lime-400/10 text-lime-400";
+}
+
+function App() {
+  return <div style={{background: '#0C0C0C', color: 'white', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>Hello</div>;
+}
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(<App />);
 </script>
