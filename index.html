@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kaylee Kim — Data Analyst & Behavioral Scientist</title>
 <meta name="description" content="Portfolio of Kaylee Kim — Data Analyst specializing in Behavioral Data Science & Economics at UT Austin.">
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300;1,9..40,400&family=DM+Mono:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
@@ -19,6 +19,50 @@
     content: ''; position: fixed; inset: 0; pointer-events: none; opacity: 0.03; z-index: 9999;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
+
+  /* ── Project card styles from projects.html ── */
+  .proj-card {
+    background: #161616;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+    text-decoration: none;
+    display: block;
+  }
+  .proj-card:hover { border-color: rgba(255,255,255,0.18); transform: translateY(-3px); }
+  .proj-card .img-wrap { width: 100%; aspect-ratio: 16 / 9; overflow: hidden; background: #1a1a1a; }
+  .proj-card .img-wrap svg { width: 100%; height: 100%; display: block; }
+  .proj-card .card-body { padding: 1.25rem 1.5rem 1.5rem; }
+  .proj-card .proj-category {
+    font-size: 11px; font-family: 'DM Mono', monospace; color: #555;
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;
+  }
+  .proj-card .proj-title { font-size: 15px; font-weight: 500; color: #f0f0f0; margin-bottom: 7px; line-height: 1.4; }
+  .proj-card .proj-desc { font-size: 13px; color: #888; line-height: 1.7; margin-bottom: 1rem; }
+  .proj-card .tag-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .proj-card .tag { font-size: 11px; font-family: 'DM Mono', monospace; padding: 3px 10px; border-radius: 99px; letter-spacing: 0.03em; }
+
+  /* Filter buttons */
+  .filter-btn {
+    background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #888;
+    font-size: 12px; font-family: 'DM Sans', sans-serif; cursor: pointer;
+    padding: 6px 16px; border-radius: 99px; transition: all 0.2s ease; letter-spacing: 0.02em;
+  }
+  .filter-btn:hover { color: #f0f0f0; border-color: rgba(255,255,255,0.2); }
+  .filter-btn.active { background: #2563eb; border-color: #2563eb; color: #fff; }
+
+  /* Projects grid — 2 col */
+  .projects-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+  @media (max-width: 700px) { .projects-grid { grid-template-columns: 1fr; } }
+  .proj-card[data-hidden="true"] { display: none; }
+
+  @keyframes fadeInCard {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .proj-card { animation: fadeInCard 0.35s ease both; }
 </style>
 </head>
 <body>
@@ -26,275 +70,158 @@
 <script type="text/babel">
 const { useState, useEffect, useRef } = React;
 
+// ── SVG Previews ──
+const SVGs = {
+  "sleep-perception": `<svg viewBox="0 0 600 338" xmlns="http://www.w3.org/2000/svg"><rect width="600" height="338" fill="#0d1f1a"/><line x1="60" y1="280" x2="560" y2="280" stroke="#1D9E75" stroke-width="0.5" stroke-opacity="0.3"/><line x1="60" y1="220" x2="560" y2="220" stroke="#1D9E75" stroke-width="0.5" stroke-opacity="0.3"/><line x1="60" y1="160" x2="560" y2="160" stroke="#1D9E75" stroke-width="0.5" stroke-opacity="0.3"/><line x1="60" y1="100" x2="560" y2="100" stroke="#1D9E75" stroke-width="0.5" stroke-opacity="0.3"/><polyline points="60,240 120,180 180,210 240,130 300,160 360,110 420,140 480,90 540,120" fill="none" stroke="#1D9E75" stroke-width="2.5" stroke-linejoin="round"/><polyline points="60,210 120,200 180,190 240,185 300,180 360,175 420,170 480,165 540,155" fill="none" stroke="#5DCAA5" stroke-width="2" stroke-dasharray="6 4" stroke-linejoin="round"/><circle cx="360" cy="110" r="5" fill="#1D9E75"/><circle cx="480" cy="90" r="5" fill="#1D9E75"/><line x1="70" y1="310" x2="90" y2="310" stroke="#1D9E75" stroke-width="2.5"/><text x="95" y="314" fill="#5DCAA5" font-size="11" font-family="sans-serif">Actual quality</text><line x1="200" y1="310" x2="220" y2="310" stroke="#5DCAA5" stroke-width="2" stroke-dasharray="4 3"/><text x="225" y="314" fill="#5DCAA5" font-size="11" font-family="sans-serif">Perceived quality</text><text x="300" y="55" text-anchor="middle" fill="#9FE1CB" font-size="14" font-family="sans-serif" font-weight="500">Sleep quality vs. perceived quality — 15k+ records</text></svg>`,
+  "burnout-detection": `<svg viewBox="0 0 600 338" xmlns="http://www.w3.org/2000/svg"><rect width="600" height="338" fill="#15112a"/><rect x="80" y="190" width="80" height="100" rx="5" fill="#26215C"/><rect x="185" y="150" width="80" height="140" rx="5" fill="#3C3489"/><rect x="290" y="100" width="80" height="190" rx="5" fill="#534AB7"/><rect x="395" y="55" width="80" height="235" rx="5" fill="#7F77DD"/><text x="120" y="305" text-anchor="middle" fill="#AFA9EC" font-size="10" font-family="sans-serif">Low</text><text x="225" y="305" text-anchor="middle" fill="#AFA9EC" font-size="10" font-family="sans-serif">Mild</text><text x="330" y="305" text-anchor="middle" fill="#AFA9EC" font-size="10" font-family="sans-serif">Moderate</text><text x="435" y="305" text-anchor="middle" fill="#AFA9EC" font-size="10" font-family="sans-serif">Severe</text><circle cx="435" cy="45" r="10" fill="#E24B4A" opacity="0.9"/><text x="452" y="50" fill="#F09595" font-size="11" font-family="sans-serif">High risk</text><text x="300" y="30" text-anchor="middle" fill="#CCC8F8" font-size="14" font-family="sans-serif" font-weight="500">Burnout severity stratification — 90% accuracy</text></svg>`,
+  "ad-targeting": `<svg viewBox="0 0 600 338" xmlns="http://www.w3.org/2000/svg"><rect width="600" height="338" fill="#0c1522"/><circle cx="200" cy="170" r="100" fill="none" stroke="#185FA5" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.6"/><circle cx="300" cy="160" r="75" fill="none" stroke="#378ADD" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.7"/><circle cx="380" cy="175" r="50" fill="none" stroke="#85B7EB" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.8"/><circle cx="200" cy="170" r="7" fill="#378ADD"/><circle cx="300" cy="160" r="7" fill="#378ADD"/><circle cx="380" cy="175" r="7" fill="#378ADD"/><text x="200" y="230" text-anchor="middle" fill="#85B7EB" font-size="10" font-family="sans-serif">Broad segment</text><text x="300" y="215" text-anchor="middle" fill="#85B7EB" font-size="10" font-family="sans-serif">Mid-value</text><text x="380" y="210" text-anchor="middle" fill="#B5D4F4" font-size="10" font-family="sans-serif">High-value</text><rect x="430" y="90" width="110" height="50" rx="6" fill="#0d1f3a" stroke="#1e3a5f" stroke-width="1"/><text x="485" y="112" text-anchor="middle" fill="#B5D4F4" font-size="18" font-family="sans-serif" font-weight="500">−18%</text><text x="485" y="128" text-anchor="middle" fill="#5a7a9a" font-size="10" font-family="sans-serif">Acq. cost</text><rect x="430" y="155" width="110" height="50" rx="6" fill="#0d1f3a" stroke="#1e3a5f" stroke-width="1"/><text x="485" y="177" text-anchor="middle" fill="#B5D4F4" font-size="18" font-family="sans-serif" font-weight="500">+12%</text><text x="485" y="193" text-anchor="middle" fill="#5a7a9a" font-size="10" font-family="sans-serif">Conversion</text><text x="300" y="305" text-anchor="middle" fill="#85B7EB" font-size="13" font-family="sans-serif">Propensity-to-buy model — user segmentation</text></svg>`,
+  "sentiment-engine": `<svg viewBox="0 0 600 338" xmlns="http://www.w3.org/2000/svg"><rect width="600" height="338" fill="#0c1522"/><rect x="50" y="80" width="340" height="16" rx="3" fill="#1e3a5f"/><rect x="50" y="80" width="240" height="16" rx="3" fill="#378ADD" opacity="0.8"/><rect x="50" y="112" width="340" height="16" rx="3" fill="#1e3a5f"/><rect x="50" y="112" width="180" height="16" rx="3" fill="#185FA5" opacity="0.8"/><rect x="50" y="144" width="340" height="16" rx="3" fill="#1e3a5f"/><rect x="50" y="144" width="280" height="16" rx="3" fill="#378ADD" opacity="0.8"/><rect x="50" y="176" width="340" height="16" rx="3" fill="#1e3a5f"/><rect x="50" y="176" width="130" height="16" rx="3" fill="#185FA5" opacity="0.8"/><rect x="50" y="208" width="340" height="16" rx="3" fill="#1e3a5f"/><rect x="50" y="208" width="300" height="16" rx="3" fill="#378ADD" opacity="0.6"/><text x="420" y="130" fill="#B5D4F4" font-size="28" font-family="sans-serif" font-weight="500">+20%</text><text x="420" y="150" fill="#5a7a9a" font-size="11" font-family="sans-serif">LTV accuracy</text><text x="420" y="185" fill="#B5D4F4" font-size="28" font-family="sans-serif" font-weight="500">−30%</text><text x="420" y="205" fill="#5a7a9a" font-size="11" font-family="sans-serif">Churn response</text><text x="300" y="270" text-anchor="middle" fill="#85B7EB" font-size="13" font-family="sans-serif">Sentiment engine — 70,000+ text entries</text></svg>`,
+  "grammys": `<svg viewBox="0 0 600 338" xmlns="http://www.w3.org/2000/svg"><rect width="600" height="338" fill="#0c1522"/><rect x="50" y="50" width="500" height="220" rx="8" fill="#0d1f3a" stroke="#1e3a5f" stroke-width="1"/><line x1="70" y1="240" x2="530" y2="240" stroke="#1e3a5f" stroke-width="0.5"/><line x1="70" y1="200" x2="530" y2="200" stroke="#1e3a5f" stroke-width="0.5"/><line x1="70" y1="160" x2="530" y2="160" stroke="#1e3a5f" stroke-width="0.5"/><line x1="70" y1="120" x2="530" y2="120" stroke="#1e3a5f" stroke-width="0.5"/><line x1="70" y1="80" x2="530" y2="80" stroke="#1e3a5f" stroke-width="0.5"/><polyline points="70,220 135,190 200,200 265,140 330,160 395,100 460,120 525,90" fill="none" stroke="#378ADD" stroke-width="2.5" stroke-linejoin="round"/><circle cx="395" cy="100" r="5" fill="#85B7EB"/><circle cx="525" cy="90" r="5" fill="#85B7EB"/><text x="300" y="285" text-anchor="middle" fill="#85B7EB" font-size="12" font-family="sans-serif">93M+ visits · 104M+ sessions · 2.8x mobile ratio</text></svg>`,
+  "supply-chain": `<svg viewBox="0 0 600 338" xmlns="http://www.w3.org/2000/svg"><rect width="600" height="338" fill="#1a1500"/><rect x="60" y="80" width="70" height="180" rx="5" fill="#412402"/><rect x="150" y="110" width="70" height="150" rx="5" fill="#633806"/><rect x="240" y="130" width="70" height="130" rx="5" fill="#854F0B"/><rect x="330" y="95" width="70" height="165" rx="5" fill="#BA7517"/><rect x="420" y="60" width="70" height="200" rx="5" fill="#EF9F27"/><circle cx="365" cy="85" r="11" fill="#E24B4A" opacity="0.9"/><text x="365" y="90" text-anchor="middle" fill="#fff" font-size="13" font-family="sans-serif" font-weight="500">!</text><text x="365" y="72" text-anchor="middle" fill="#F09595" font-size="10" font-family="sans-serif">Anomaly</text><text x="95" y="275" text-anchor="middle" fill="#FAC775" font-size="9" font-family="sans-serif">Node A</text><text x="185" y="275" text-anchor="middle" fill="#FAC775" font-size="9" font-family="sans-serif">Node B</text><text x="275" y="275" text-anchor="middle" fill="#FAC775" font-size="9" font-family="sans-serif">Node C</text><text x="365" y="275" text-anchor="middle" fill="#FAC775" font-size="9" font-family="sans-serif">Node D</text><text x="455" y="275" text-anchor="middle" fill="#FAC775" font-size="9" font-family="sans-serif">Node E</text><text x="300" y="308" text-anchor="middle" fill="#FAC775" font-size="13" font-family="sans-serif">Supply chain — 95% bottleneck detection accuracy</text></svg>`,
+  "energy-sustainability": `<svg viewBox="0 0 600 338" xmlns="http://www.w3.org/2000/svg"><rect width="600" height="338" fill="#0e1a0e"/><ellipse cx="300" cy="170" rx="240" ry="120" fill="none" stroke="#3B6D11" stroke-width="1" stroke-dasharray="6 4" opacity="0.4"/><circle cx="430" cy="140" r="28" fill="#173404" stroke="#639922" stroke-width="1.5"/><text x="430" y="136" text-anchor="middle" fill="#97C459" font-size="10" font-family="sans-serif" font-weight="500">Mid-Atlantic</text><text x="430" y="150" text-anchor="middle" fill="#5DCAA5" font-size="9" font-family="sans-serif">#1 generator</text><circle cx="160" cy="130" r="24" fill="#173404" stroke="#3B6D11" stroke-width="1.5"/><text x="160" y="126" text-anchor="middle" fill="#97C459" font-size="10" font-family="sans-serif" font-weight="500">Northwest</text><text x="160" y="140" text-anchor="middle" fill="#5DCAA5" font-size="9" font-family="sans-serif">60% renewable</text><circle cx="280" cy="210" r="20" fill="#0f1f0f" stroke="#3B6D11" stroke-width="1"/><text x="280" y="214" text-anchor="middle" fill="#639922" font-size="9" font-family="sans-serif">Southeast</text><circle cx="380" cy="215" r="18" fill="#0f1f0f" stroke="#3B6D11" stroke-width="1"/><text x="380" y="219" text-anchor="middle" fill="#639922" font-size="9" font-family="sans-serif">South</text><circle cx="200" cy="195" r="16" fill="#0f1f0f" stroke="#3B6D11" stroke-width="1"/><text x="200" y="199" text-anchor="middle" fill="#639922" font-size="9" font-family="sans-serif">Midwest</text><line x1="430" y1="168" x2="380" y2="197" stroke="#3B6D11" stroke-width="1" opacity="0.5"/><line x1="160" y1="154" x2="200" y2="179" stroke="#3B6D11" stroke-width="1" opacity="0.5"/><text x="300" y="290" text-anchor="middle" fill="#97C459" font-size="13" font-family="sans-serif">Energy data modeling — 3M+ U.S. records</text></svg>`,
+};
+
 // ── Project Data ──
 const PROJECTS = [
   {
-    id: "sleep-perception",
+    id: "sleep-perception", cat: "health",
     title: "Orthosomnia & Sleep Perception Analysis",
     subtitle: "Bridging the gap between perceived and actual sleep quality",
     date: "Jan 2026",
-    tags: ["Scikit-learn", "SQL", "Tableau"],
-    tagColors: ["accent", "cool", "accent"],
+    category: "Health & behavioral",
+    tags: ["Scikit-learn", "SQL", "Tableau", "Python"],
+    tagStyle: { background: "#0a2e20", color: "#5DCAA5" },
     hero: "linear-gradient(135deg, #0d1117, #1a1a2e, #16213e)",
-    icon: "🌙",
-    stats: [
-      { value: "33%", label: "Perception Gap Found" },
-      { value: "85%", label: "Classification Accuracy" },
-      { value: "15K+", label: "Measurements Analyzed" },
-    ],
-    overview:
-      "Uncovered a 33% gap between perceived and actual sleep quality by analyzing 15,000+ physiological measurements against patient-reported sleep logs queried using SQL. This project explores the emerging phenomenon of 'orthosomnia' — anxiety caused by wearable sleep data.",
+    stats: [{ value: "33%", label: "Perception Gap Found" }, { value: "85%", label: "Classification Accuracy" }, { value: "15K+", label: "Measurements Analyzed" }],
+    overview: "Uncovered a 33% gap between perceived and actual sleep quality by analyzing 15,000+ physiological measurements against patient-reported sleep logs queried using SQL. This project explores the emerging phenomenon of 'orthosomnia' — anxiety caused by wearable sleep data.",
     sections: [
-      {
-        heading: "The Problem",
-        body: "Wearable devices promise better sleep insights, but growing evidence suggests they can actually worsen sleep anxiety. Patients fixate on metrics, creating a disconnect between how they feel and what their devices report. I wanted to quantify this gap and identify who's most at risk.",
-      },
-      {
-        heading: "Approach & Methodology",
-        body: "I analyzed 15,000+ physiological measurements from Fitbit devices against patient-reported sleep quality logs. Using SQL for data extraction and Scikit-learn for clustering, I segmented users into clinically meaningful sleep profiles based on the divergence between objective biometrics and subjective reports.",
-      },
-      {
-        heading: "Key Findings",
-        body: "The analysis revealed three distinct sleep profiles with 85% classification accuracy: 'Aligned Sleepers' whose perception matched reality, 'Optimistic Sleepers' who felt rested despite poor metrics, and 'Orthosomnia-Prone' users whose anxiety about data degraded their actual sleep quality.",
-      },
-      {
-        heading: "Impact",
-        body: "Designed a Cognitive Sleep Coach algorithm and visualized patient risk tiers through Tableau dashboards, translating model outputs into actionable behavioral recommendations that clinicians could use for early intervention.",
-      },
+      { heading: "The Problem", body: "Wearable devices promise better sleep insights, but growing evidence suggests they can actually worsen sleep anxiety. Patients fixate on metrics, creating a disconnect between how they feel and what their devices report. I wanted to quantify this gap and identify who's most at risk." },
+      { heading: "Approach & Methodology", body: "I analyzed 15,000+ physiological measurements from Fitbit devices against patient-reported sleep quality logs. Using SQL for data extraction and Scikit-learn for clustering, I segmented users into clinically meaningful sleep profiles based on the divergence between objective biometrics and subjective reports." },
+      { heading: "Key Findings", body: "The analysis revealed three distinct sleep profiles with 85% classification accuracy: 'Aligned Sleepers' whose perception matched reality, 'Optimistic Sleepers' who felt rested despite poor metrics, and 'Orthosomnia-Prone' users whose anxiety about data degraded their actual sleep quality." },
+      { heading: "Impact", body: "Designed a Cognitive Sleep Coach algorithm and visualized patient risk tiers through Tableau dashboards, translating model outputs into actionable behavioral recommendations that clinicians could use for early intervention." },
     ],
     github: "https://github.com/kyu976/Mind-Body-Synch-Coach",
   },
   {
-    id: "burnout-detection",
+    id: "burnout-detection", cat: "health",
     title: "Clinical Burnout Detection & Risk Stratification",
     subtitle: "Early warning system for clinician burnout using NLP",
     date: "Dec 2025",
-    tags: ["TensorFlow", "Matplotlib", "Seaborn"],
-    tagColors: ["warm", "accent", "cool"],
+    category: "Health & behavioral",
+    tags: ["TensorFlow", "NLP", "Python", "Pandas"],
+    tagStyle: { background: "#1a1530", color: "#AFA9EC" },
     hero: "linear-gradient(135deg, #1a0a0a, #2e1a1a, #3e1616)",
-    icon: "🔥",
-    stats: [
-      { value: "90%", label: "Stratification Accuracy" },
-      { value: "65→88%", label: "Text Classification Lift" },
-      { value: "4", label: "Severity Levels Detected" },
-    ],
-    overview:
-      "Built a weighted risk assessment model that stratifies users into four burnout severity levels with 90% accuracy, using TensorFlow for sequence modeling on unstructured clinical notes.",
+    stats: [{ value: "90%", label: "Stratification Accuracy" }, { value: "65→88%", label: "Text Classification Lift" }, { value: "4", label: "Severity Levels Detected" }],
+    overview: "Built a weighted risk assessment model that stratifies users into four burnout severity levels with 90% accuracy, using TensorFlow for sequence modeling on unstructured clinical notes.",
     sections: [
-      {
-        heading: "The Problem",
-        body: "Clinician burnout is a silent crisis — by the time it's visible, it's often too late. Traditional surveys are infrequent and self-reported. I wanted to build a system that could detect burnout signals from the language patterns in clinical notes, enabling earlier intervention.",
-      },
-      {
-        heading: "Approach & Methodology",
-        body: "I built a weighted risk assessment model in Python using Pandas and NumPy, then improved text classification accuracy from 65% to 88% by normalizing input length and modeling sequences using TensorFlow. The model processes unstructured clinical notes to identify linguistic markers of burnout.",
-      },
-      {
-        heading: "Key Findings",
-        body: "The model identified four distinct burnout severity levels with 90% accuracy. Key linguistic markers included shortened sentence length, increased use of passive voice, and declining specificity in clinical documentation — patterns that precede visible burnout symptoms by weeks.",
-      },
-      {
-        heading: "Impact",
-        body: "Visualized longitudinal burnout risk and linguistic markers using Matplotlib and Seaborn, giving clinicians a timeline view to support early intervention decisions before burnout becomes critical.",
-      },
+      { heading: "The Problem", body: "Clinician burnout is a silent crisis — by the time it's visible, it's often too late. Traditional surveys are infrequent and self-reported. I wanted to build a system that could detect burnout signals from the language patterns in clinical notes, enabling earlier intervention." },
+      { heading: "Approach & Methodology", body: "I built a weighted risk assessment model in Python using Pandas and NumPy, then improved text classification accuracy from 65% to 88% by normalizing input length and modeling sequences using TensorFlow." },
+      { heading: "Key Findings", body: "The model identified four distinct burnout severity levels with 90% accuracy. Key linguistic markers included shortened sentence length, increased use of passive voice, and declining specificity in clinical documentation — patterns that precede visible burnout symptoms by weeks." },
+      { heading: "Impact", body: "Visualized longitudinal burnout risk and linguistic markers using Matplotlib and Seaborn, giving clinicians a timeline view to support early intervention decisions before burnout becomes critical." },
     ],
     github: "https://github.com/kyu976",
   },
   {
-    id: "ad-targeting",
+    id: "ad-targeting", cat: "marketing",
     title: "Predictive Ad Targeting & ROI Optimization",
     subtitle: "Propensity modeling for smarter ad spend allocation",
     date: "Jan 2026",
-    tags: ["Pandas", "Scikit-learn"],
-    tagColors: ["cool", "accent"],
+    category: "Marketing & consumer",
+    tags: ["Pandas", "Scikit-learn", "Python"],
+    tagStyle: { background: "#0a1525", color: "#85B7EB" },
     hero: "linear-gradient(135deg, #0a1a1a, #1a2e2e, #163e3e)",
-    icon: "🎯",
-    stats: [
-      { value: "18%", label: "Lower Acquisition Cost" },
-      { value: "12%", label: "Conversion Rate Increase" },
-      { value: "15%", label: "ROI Improvement" },
-    ],
-    overview:
-      "Built a propensity-to-buy model using Pandas and Scikit-learn to score and rank prospective user segments, reducing customer acquisition cost by 18% and increasing conversion rate by 12%.",
+    stats: [{ value: "18%", label: "Lower Acquisition Cost" }, { value: "12%", label: "Conversion Rate Increase" }, { value: "15%", label: "ROI Improvement" }],
+    overview: "Built a propensity-to-buy model using Pandas and Scikit-learn to score and rank prospective user segments, reducing customer acquisition cost by 18% and increasing conversion rate by 12%.",
     sections: [
-      {
-        heading: "The Problem",
-        body: "Ad budgets are often spread evenly across demographics, wasting spend on low-intent audiences. I wanted to build a data-driven approach to identify which user segments are most likely to convert, allowing precise reallocation of ad spend.",
-      },
-      {
-        heading: "Approach & Methodology",
-        body: "Using Pandas for data wrangling and Scikit-learn for modeling, I built a propensity-to-buy score that ranked user segments by conversion likelihood. The model incorporated demographic, behavioral, and engagement features to predict purchase intent.",
-      },
-      {
-        heading: "Key Findings",
-        body: "High-value demographic groups were identified and prioritized for targeted ad spend reallocation. The model demonstrated clear lift over baseline targeting, with the test cohort showing a 15% improvement in campaign ROI.",
-      },
-      {
-        heading: "Impact",
-        body: "Validated model lift against baseline using Scikit-learn evaluation metrics. The results provided a clear business case for shifting from demographic-based to propensity-based ad targeting across future campaigns.",
-      },
+      { heading: "The Problem", body: "Ad budgets are often spread evenly across demographics, wasting spend on low-intent audiences. I wanted to build a data-driven approach to identify which user segments are most likely to convert, allowing precise reallocation of ad spend." },
+      { heading: "Approach & Methodology", body: "Using Pandas for data wrangling and Scikit-learn for modeling, I built a propensity-to-buy score that ranked user segments by conversion likelihood, incorporating demographic, behavioral, and engagement features." },
+      { heading: "Key Findings", body: "High-value demographic groups were identified and prioritized for targeted ad spend reallocation. The model demonstrated a 15% improvement in campaign ROI." },
+      { heading: "Impact", body: "Validated model lift against baseline using Scikit-learn evaluation metrics, providing a clear business case for shifting from demographic-based to propensity-based ad targeting." },
     ],
     github: "https://github.com/kyu976",
   },
   {
-    id: "sentiment-engine",
+    id: "sentiment-engine", cat: "marketing",
     title: "Consumer Sentiment & Engagement Analytics Engine",
     subtitle: "NLP pipeline for proactive customer retention",
     date: "Dec 2025",
-    tags: ["NLTK", "Looker"],
-    tagColors: ["accent", "cool"],
+    category: "Marketing & consumer",
+    tags: ["NLTK", "Looker", "Python"],
+    tagStyle: { background: "#0a1525", color: "#85B7EB" },
     hero: "linear-gradient(135deg, #1a1a0a, #2e2e1a, #3e3416)",
-    icon: "💬",
-    stats: [
-      { value: "70K+", label: "Text Entries Analyzed" },
-      { value: "20%", label: "Better LTV Prediction" },
-      { value: "30%", label: "Faster Churn Response" },
-    ],
-    overview:
-      "Built an NLP pipeline in Python using NLTK to analyze 70,000+ text entries, improving sentiment classification accuracy by 14% over keyword-based baselines. Engineered a Customer Health Score aggregating 28 sentiment indicators.",
+    stats: [{ value: "70K+", label: "Text Entries Analyzed" }, { value: "20%", label: "Better LTV Prediction" }, { value: "30%", label: "Faster Churn Response" }],
+    overview: "Built an NLP pipeline in Python using NLTK to analyze 70,000+ text entries, improving sentiment classification accuracy by 14% over keyword-based baselines. Engineered a Customer Health Score aggregating 28 sentiment indicators.",
     sections: [
-      {
-        heading: "The Problem",
-        body: "Companies lose customers silently — by the time churn is visible in metrics, the customer has already mentally left. I wanted to build a system that could detect dissatisfaction signals in real-time from text feedback, enabling proactive retention outreach.",
-      },
-      {
-        heading: "Approach & Methodology",
-        body: "I built an NLP pipeline using NLTK that processed 70,000+ customer text entries with 14% better accuracy than keyword-based baselines. Then I engineered a composite Customer Health Score by aggregating 28 distinct sentiment indicators into a single actionable metric.",
-      },
-      {
-        heading: "Key Findings",
-        body: "The Customer Health Score increased lifetime value prediction accuracy by 20%, and flagged at-risk accounts weeks before traditional churn indicators. Negative sentiment clusters aligned with specific product experience friction points.",
-      },
-      {
-        heading: "Impact",
-        body: "Deployed automated Looker dashboards that flagged at-risk accounts weekly, reducing churn response time by 30% and enabling the marketing team to intervene before customers disengaged.",
-      },
+      { heading: "The Problem", body: "Companies lose customers silently — by the time churn is visible in metrics, the customer has already mentally left. I wanted to detect dissatisfaction signals in real-time from text feedback." },
+      { heading: "Approach & Methodology", body: "I built an NLP pipeline using NLTK that processed 70,000+ customer text entries with 14% better accuracy than keyword-based baselines, then engineered a composite Customer Health Score from 28 distinct sentiment indicators." },
+      { heading: "Key Findings", body: "The Customer Health Score increased lifetime value prediction accuracy by 20%, and flagged at-risk accounts weeks before traditional churn indicators." },
+      { heading: "Impact", body: "Deployed automated Looker dashboards that flagged at-risk accounts weekly, reducing churn response time by 30%." },
     ],
     github: "https://github.com/kyu976",
   },
   {
-    id: "grammys",
+    id: "grammys", cat: "marketing",
     title: "GRAMMYs Audience Analytics — 93M+ Web Visits",
     subtitle: "Audience strategy validation for the Recording Academy",
     date: "Feb 2025",
+    category: "Marketing & consumer",
     tags: ["SQL", "Google Analytics", "Tableau"],
-    tagColors: ["cool", "warm", "accent"],
+    tagStyle: { background: "#0a1525", color: "#85B7EB" },
     hero: "linear-gradient(135deg, #1a1a2e, #16213e, #0d1117)",
-    icon: "🏆",
-    stats: [
-      { value: "93M+", label: "Web Visits Analyzed" },
-      { value: "104M+", label: "Sessions Tracked" },
-      { value: "2.8x", label: "Mobile-to-Desktop Ratio" },
-    ],
-    overview:
-      "Analyzed engagement across 93M+ web visits and 104M+ sessions using SQL, identifying a 2.8x mobile-to-desktop traffic ratio that shifted the content rollout strategy to mobile-first.",
+    stats: [{ value: "93M+", label: "Web Visits Analyzed" }, { value: "104M+", label: "Sessions Tracked" }, { value: "2.8x", label: "Mobile-to-Desktop Ratio" }],
+    overview: "Analyzed engagement across 93M+ web visits and 104M+ sessions using SQL, identifying a 2.8x mobile-to-desktop traffic ratio that shifted the content rollout strategy to mobile-first.",
     sections: [
-      {
-        heading: "The Problem",
-        body: "The Recording Academy operated two separate web properties but lacked unified analytics to understand how audiences moved between them. They needed data-driven validation of their dual-platform strategy and guidance on where to prioritize content investment.",
-      },
-      {
-        heading: "Approach & Methodology",
-        body: "Using SQL and Google Analytics, I built cohort analytics on bounce rate, session duration, and traffic spike patterns across both platforms. The analysis covered 93M+ visits and 104M+ sessions to create a comprehensive audience behavior picture.",
-      },
-      {
-        heading: "Key Findings",
-        body: "Discovered a 2.8x mobile-to-desktop ratio that validated a shift to mobile-first content strategy. Built SQL-based cohort analytics that improved campaign targeting precision by 15% by identifying high-engagement audience segments.",
-      },
-      {
-        heading: "Impact",
-        body: "Delivered executive-ready Tableau dashboards with data storytelling, translating raw engagement metrics into strategic recommendations for cross-channel promotion that directly informed the Academy's content rollout decisions.",
-      },
+      { heading: "The Problem", body: "The Recording Academy operated two separate web properties but lacked unified analytics to understand how audiences moved between them." },
+      { heading: "Approach & Methodology", body: "Using SQL and Google Analytics, I built cohort analytics on bounce rate, session duration, and traffic spike patterns across both platforms covering 93M+ visits." },
+      { heading: "Key Findings", body: "Discovered a 2.8x mobile-to-desktop ratio that validated a shift to mobile-first content strategy and improved campaign targeting precision by 15%." },
+      { heading: "Impact", body: "Delivered executive-ready Tableau dashboards translating raw engagement metrics into strategic recommendations that directly informed the Academy's content rollout decisions." },
     ],
     github: "https://github.com/kyu976/Grammys-Project-Website-Analytics",
   },
   {
-    id: "ai-bias",
-    title: "Detecting Algorithmic Bias in AI Resume Screening",
-    subtitle: "Auditing AI hiring systems for fairness",
-    date: "Jan – Apr 2025",
-    tags: ["Python", "NLP", "Hypothesis Testing"],
-    tagColors: ["warm", "cool", "accent"],
-    hero: "linear-gradient(135deg, #1a0a2e, #2e1a3e, #1a1a2e)",
-    icon: "⚖️",
-    stats: [
-      { value: "Bias", label: "Patterns Uncovered" },
-      { value: "NLP", label: "Text Analysis" },
-      { value: "Stats", label: "Hypothesis Testing" },
-    ],
-    overview:
-      "Investigated how AI systems evaluate resumes for technical roles, uncovering bias patterns through statistical hypothesis testing and NLP text analysis. A collaborative research project at UT Austin.",
+    id: "supply-chain", cat: "ops",
+    title: "Supply Chain Analytics & Inventory Optimization",
+    subtitle: "Anomaly detection and bottleneck identification at scale",
+    date: "Jan 2026",
+    category: "Operations",
+    tags: ["Pandas", "NumPy", "Scikit-learn"],
+    tagStyle: { background: "#2e1a00", color: "#FAC775" },
+    hero: "linear-gradient(135deg, #1a1500, #2a2000, #1a1000)",
+    stats: [{ value: "40%", label: "Reporting Latency Reduced" }, { value: "95%", label: "Bottleneck Detection" }, { value: "50K+", label: "Logs Processed" }],
+    overview: "Reduced reporting latency by 40% via a multi-source data pipeline synchronizing 50,000+ high-frequency system logs. Achieved 95% accuracy detecting process bottlenecks with Scikit-learn anomaly detection.",
     sections: [
-      {
-        heading: "The Problem",
-        body: "AI resume screening tools promise objectivity, but they can encode and amplify existing biases in hiring data. Our team wanted to systematically test whether popular AI screening approaches treat candidates equitably across demographic features.",
-      },
-      {
-        heading: "Approach & Methodology",
-        body: "We constructed controlled resume variations and submitted them through AI screening pipelines, using NLP to analyze how language choices affected scoring. Statistical hypothesis testing was used to determine whether observed differences were significant.",
-      },
-      {
-        heading: "Key Findings",
-        body: "The analysis revealed systematic patterns in how AI systems weighted certain resume features, with statistically significant differences in scoring that correlated with demographic indicators rather than qualification signals.",
-      },
-      {
-        heading: "Impact",
-        body: "The findings contributed to the growing body of research on AI fairness in hiring, providing concrete evidence that AI screening systems require ongoing auditing and bias mitigation strategies.",
-      },
+      { heading: "The Problem", body: "Supply chain bottlenecks were identified manually, creating reporting delays and missed optimization opportunities across distributed inventory nodes." },
+      { heading: "Approach & Methodology", body: "Engineered a multi-source pipeline in Python to synchronize 50,000+ system logs, then applied Z-score normalization and Scikit-learn anomaly detection." },
+      { heading: "Key Findings", body: "Achieved 95% accuracy in detecting process bottlenecks, surfacing root causes that manual review consistently missed." },
+      { heading: "Impact", body: "Reduced reporting latency by 40% and enabled real-time inventory performance tracking across 5 disparate metric scales." },
     ],
-    github: "https://github.com/bella-mia/2025_FinalProject_ByteMe",
+    github: "https://github.com/kyu976",
   },
   {
-    id: "energy-sustainability",
+    id: "energy-sustainability", cat: "ops",
     title: "Energy Data Modeling for Sustainable Data Centers",
     subtitle: "Optimizing Intel's data center site selection via energy analytics",
     date: "Jan 2025",
+    category: "Operations",
     tags: ["SQL", "Tableau"],
-    tagColors: ["cool", "accent"],
+    tagStyle: { background: "#0f1f0f", color: "#97C459" },
     hero: "linear-gradient(135deg, #0a1a0a, #1a2e1a, #163e2e)",
-    icon: "⚡",
-    stats: [
-      { value: "3M+", label: "Energy Records Analyzed" },
-      { value: "60%", label: "Renewable Share Found" },
-      { value: "5+", label: "Regions Compared" },
-    ],
-    overview:
-      "Analyzed 3+ million U.S. energy records using SQL to evaluate regional surplus, identifying optimal data center sites by modeling cost, capacity, and sustainability tradeoffs.",
+    stats: [{ value: "3M+", label: "Energy Records Analyzed" }, { value: "60%", label: "Renewable Share Found" }, { value: "5+", label: "Regions Compared" }],
+    overview: "Analyzed 3+ million U.S. energy records using SQL to evaluate regional surplus, identifying optimal data center sites by modeling cost, capacity, and sustainability tradeoffs.",
     sections: [
-      {
-        heading: "The Problem",
-        body: "Data centers are massive energy consumers. Intel needed a data-driven framework to select sites that balance operational costs with environmental sustainability targets. The challenge was synthesizing millions of energy records into actionable site recommendations.",
-      },
-      {
-        heading: "Approach & Methodology",
-        body: "Using SQL, I analyzed 3+ million U.S. energy records to evaluate regional energy surplus, cost structures, and renewable energy penetration. The analysis compared regions across multiple dimensions to identify optimal site configurations.",
-      },
-      {
-        heading: "Key Findings",
-        body: "Identified Mid-Atlantic as the top net energy generator and the Northwest region with 60% renewable energy share. Modeled tradeoffs between cost and sustainability to create a ranked recommendation framework.",
-      },
-      {
-        heading: "Impact",
-        body: "Built executive-ready Tableau dashboards to present site selection findings, enabling stakeholders to compare regions across cost, capacity, and renewability dimensions for informed infrastructure investment decisions.",
-      },
+      { heading: "The Problem", body: "Data centers are massive energy consumers. Intel needed a data-driven framework to select sites that balance operational costs with environmental sustainability targets." },
+      { heading: "Approach & Methodology", body: "Using SQL, I analyzed 3+ million U.S. energy records to evaluate regional energy surplus, cost structures, and renewable energy penetration across multiple dimensions." },
+      { heading: "Key Findings", body: "Identified Mid-Atlantic as the top net energy generator and the Northwest region with 60% renewable energy share." },
+      { heading: "Impact", body: "Built executive-ready Tableau dashboards enabling stakeholders to compare regions across cost, capacity, and renewability for informed infrastructure investment decisions." },
     ],
     github: "https://github.com/kyu976/Intel-Project-Data-Analysis-for-Sustainability",
   },
 ];
 
-// ── Tag color helper ──
-const tagStyle = (color) => {
-  if (color === "warm") return "bg-orange-500/10 text-orange-400";
-  if (color === "cool") return "bg-blue-400/10 text-blue-400";
-  return "bg-lime-400/10 text-lime-400";
-};
-
-// ── Scroll to top on route change ──
+// ── Helpers ──
 function useScrollTop(dep) {
   useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, [dep]);
 }
-
-// ── Animate on scroll ──
 function useInView(ref) {
   const [visible, setVisible] = useState(false);
   useEffect(() => {
@@ -307,9 +234,9 @@ function useInView(ref) {
 }
 function AnimateIn({ children, className = "", delay = 0 }) {
   const ref = useRef(null);
-  const visible = useInView(ref);
+  const v = useInView(ref);
   return (
-    <div ref={ref} className={className} style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(30px)", transition: `opacity 0.7s ease ${delay}s, transform 0.7s ease ${delay}s` }}>
+    <div ref={ref} className={className} style={{ opacity: v ? 1 : 0, transform: v ? "translateY(0)" : "translateY(30px)", transition: `opacity 0.7s ease ${delay}s, transform 0.7s ease ${delay}s` }}>
       {children}
     </div>
   );
@@ -325,46 +252,67 @@ function Nav({ page }) {
     return () => window.removeEventListener("scroll", h);
   }, []);
   return (
-    <nav className={`fixed top-0 w-full z-50 px-6 md:px-10 py-5 flex items-center justify-between transition-all duration-300 ${scrolled ? "border-b border-white/10" : ""}`} style={{ background: "rgba(12,12,12,0.8)", backdropFilter: "blur(20px)" }}>
+    <nav className={`fixed top-0 w-full z-50 px-6 md:px-10 py-5 flex items-center justify-between transition-all duration-300 ${scrolled ? "border-b border-white/10" : ""}`} style={{ background: "rgba(12,12,12,0.85)", backdropFilter: "blur(20px)" }}>
       <a href="#/" className="text-xl italic" style={{ fontFamily: "'Instrument Serif', Georgia, serif", color: "#F0EDE6" }}>kaylee<span className="text-lime-400">.</span></a>
       <button className="md:hidden flex flex-col gap-1.5 w-6" onClick={() => setOpen(!open)}>
         <span className="block w-full h-0.5 bg-white/80" /><span className="block w-full h-0.5 bg-white/80" /><span className="block w-full h-0.5 bg-white/80" />
       </button>
-      <div className={`${open ? "flex" : "hidden"} md:flex fixed md:static inset-0 md:inset-auto bg-[#0C0C0C] md:bg-transparent flex-col md:flex-row items-center justify-center md:justify-end gap-8 md:gap-8 z-40`}>
+      <div className={`${open ? "flex" : "hidden"} md:flex fixed md:static inset-0 md:inset-auto bg-[#0C0C0C] md:bg-transparent flex-col md:flex-row items-center justify-center md:justify-end gap-8 z-40`}>
         <button className="md:hidden absolute top-5 right-6 text-white/60 text-2xl" onClick={() => setOpen(false)}>✕</button>
         {["Experience", "Projects", "Skills", "About"].map((s) => (
-          <a key={s} href={`#/${s.toLowerCase()}`} onClick={() => { setOpen(false); if (page === "home") { setTimeout(() => document.getElementById(s.toLowerCase())?.scrollIntoView({ behavior: "smooth" }), 50); }}}
-            className="text-xs font-medium tracking-widest uppercase text-white/50 hover:text-white/90 transition-colors">{s}</a>
+          <a key={s} href={`#/${s.toLowerCase()}`} onClick={() => { setOpen(false); if (page === "home") setTimeout(() => document.getElementById(s.toLowerCase())?.scrollIntoView({ behavior: "smooth" }), 50); }} className="text-xs font-medium tracking-widest uppercase text-white/50 hover:text-white/90 transition-colors">{s}</a>
         ))}
-        <a href="#/contact" onClick={() => { setOpen(false); if (page === "home") { setTimeout(() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" }), 50); }}}
-          className="px-5 py-2 bg-lime-400 text-black text-xs font-semibold tracking-wide uppercase rounded-full hover:shadow-lg hover:shadow-lime-400/30 transition-all">Let's Talk</a>
+        <a href="#/contact" onClick={() => { setOpen(false); if (page === "home") setTimeout(() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" }), 50); }} className="px-5 py-2 bg-lime-400 text-black text-xs font-semibold tracking-wide uppercase rounded-full hover:shadow-lg hover:shadow-lime-400/30 transition-all">Let's Talk</a>
       </div>
     </nav>
   );
 }
 
-// ── Project Card ──
-function ProjectCard({ project, index }) {
+// ── Project Card (new SVG layout) ──
+function ProjectCard({ project, hidden }) {
   return (
-    <AnimateIn delay={index * 0.08}>
-      <a href={`#/project/${project.id}`} className="block group rounded-xl overflow-hidden border border-white/10 hover:border-white/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/40" style={{ background: "#1A1A1A" }}>
-        <div className="h-48 flex items-center justify-center text-5xl" style={{ background: project.hero }}>
-          {project.icon}
+    <a href={`#/project/${project.id}`} className="proj-card" data-hidden={hidden ? "true" : "false"}>
+      <div className="img-wrap" dangerouslySetInnerHTML={{ __html: SVGs[project.id] }} />
+      <div className="card-body">
+        <div className="proj-category">{project.category}</div>
+        <div className="proj-title">{project.title}</div>
+        <div className="proj-desc">{project.subtitle}</div>
+        <div className="tag-row">
+          {project.tags.map(t => <span key={t} className="tag" style={project.tagStyle}>{t}</span>)}
         </div>
-        <div className="p-6">
-          <div className="flex gap-2 flex-wrap mb-3">
-            {project.tags.map((t, i) => (
-              <span key={t} className={`text-[10px] font-mono px-2.5 py-1 rounded-full ${tagStyle(project.tagColors[i])}`}>{t}</span>
+      </div>
+    </a>
+  );
+}
+
+// ── Projects Section with filters ──
+function ProjectsSection() {
+  const [active, setActive] = useState("all");
+  const filters = [
+    { key: "all", label: "All" },
+    { key: "health", label: "Health & behavioral" },
+    { key: "marketing", label: "Marketing & consumer" },
+    { key: "ops", label: "Operations" },
+  ];
+  return (
+    <section id="projects" className="px-6 md:px-10 py-28" style={{ background: "#141414" }}>
+      <AnimateIn>
+        <div className="flex flex-wrap items-end gap-6 mb-12">
+          <div>
+            <div className="text-xs font-mono text-lime-400 tracking-[0.15em] uppercase mb-3">Selected Work</div>
+            <h2 className="text-4xl md:text-5xl" style={{ fontFamily: "'Instrument Serif', Georgia, serif", color: "#F0EDE6" }}>Featured Projects</h2>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            {filters.map(f => (
+              <button key={f.key} className={`filter-btn ${active === f.key ? "active" : ""}`} onClick={() => setActive(f.key)}>{f.label}</button>
             ))}
           </div>
-          <h3 className="text-lg mb-2" style={{ fontFamily: "'Instrument Serif', Georgia, serif", color: "#F0EDE6" }}>{project.title}</h3>
-          <p className="text-sm leading-relaxed mb-4" style={{ color: "#8A8780" }}>{project.subtitle}</p>
-          <span className="text-xs font-medium text-lime-400 inline-flex items-center gap-1 group-hover:gap-2 transition-all">
-            Read Case Study <span>→</span>
-          </span>
         </div>
-      </a>
-    </AnimateIn>
+      </AnimateIn>
+      <div className="projects-grid">
+        {PROJECTS.map(p => <ProjectCard key={p.id} project={p} hidden={active !== "all" && p.cat !== active} />)}
+      </div>
+    </section>
   );
 }
 
@@ -400,7 +348,7 @@ function HomePage() {
       {/* Experience */}
       <section id="experience" className="px-6 md:px-10 py-28">
         <AnimateIn><div className="text-xs font-mono text-lime-400 tracking-[0.15em] uppercase mb-3">Career</div><h2 className="text-4xl md:text-5xl mb-16" style={{ fontFamily: "'Instrument Serif', Georgia, serif", color: "#F0EDE6" }}>Experience</h2></AnimateIn>
-        <div className="max-w-3xl space-y-0">
+        <div className="max-w-3xl">
           {[
             { date: "May 2025 – Present", role: "Data Science Intern", company: "UT Austin PsyBrain Lab", desc: "Built Python pipelines for 10M+ Fitbit records and 20M+ heart rate measurements. Improved predictive accuracy by 15% and reduced computation time by 50%.", metrics: ["40% faster timelines", "15% accuracy gain", "50% less compute"] },
             { date: "Jan 2024 – Present", role: "Technical Research Assistant", company: "TIES Lab", desc: "Processed 700+ hours of multimodal behavioral data. Developed sentiment classification for 500+ hours of conversation data across 8 cross-functional teams.", metrics: ["60% faster onboarding", "500+ hrs classified"] },
@@ -413,9 +361,7 @@ function HomePage() {
                   <div className="text-xl mb-1" style={{ fontFamily: "'Instrument Serif', Georgia, serif", color: "#F0EDE6" }}>{e.role}</div>
                   <div className="text-sm font-medium text-lime-400 mb-2">{e.company}</div>
                   <div className="text-sm leading-relaxed" style={{ color: "#8A8780" }}>{e.desc}</div>
-                  <div className="flex gap-2 mt-3 flex-wrap">
-                    {e.metrics.map((m) => <span key={m} className="text-[10px] font-mono px-2.5 py-1 rounded-full border border-white/10 text-white/50">{m}</span>)}
-                  </div>
+                  <div className="flex gap-2 mt-3 flex-wrap">{e.metrics.map((m) => <span key={m} className="text-[10px] font-mono px-2.5 py-1 rounded-full border border-white/10 text-white/50">{m}</span>)}</div>
                 </div>
               </div>
             </AnimateIn>
@@ -423,18 +369,8 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Projects */}
-      <section id="projects" className="px-6 md:px-10 py-28" style={{ background: "#141414" }}>
-        <AnimateIn>
-          <div className="flex justify-between items-end flex-wrap gap-4 mb-16">
-            <div><div className="text-xs font-mono text-lime-400 tracking-[0.15em] uppercase mb-3">Selected Work</div><h2 className="text-4xl md:text-5xl" style={{ fontFamily: "'Instrument Serif', Georgia, serif", color: "#F0EDE6" }}>Featured Projects</h2></div>
-            <p className="text-sm max-w-sm" style={{ color: "#8A8780" }}>Click any project to read the full case study with methodology, findings, and impact.</p>
-          </div>
-        </AnimateIn>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {PROJECTS.map((p, i) => <ProjectCard key={p.id} project={p} index={i} />)}
-        </div>
-      </section>
+      {/* Projects with new layout */}
+      <ProjectsSection />
 
       {/* Skills */}
       <section id="skills" className="px-6 md:px-10 py-28">
@@ -516,26 +452,21 @@ function HomePage() {
 function ProjectPage({ project }) {
   useScrollTop(project.id);
   if (!project) return <div className="min-h-screen flex items-center justify-center text-white/50 pt-24">Project not found. <a href="#/" className="text-lime-400 ml-2">Go home →</a></div>;
-
-  const currentIdx = PROJECTS.findIndex((p) => p.id === project.id);
-  const prev = currentIdx > 0 ? PROJECTS[currentIdx - 1] : null;
-  const next = currentIdx < PROJECTS.length - 1 ? PROJECTS[currentIdx + 1] : null;
-
+  const ci = PROJECTS.findIndex((p) => p.id === project.id);
+  const prev = ci > 0 ? PROJECTS[ci - 1] : null;
+  const next = ci < PROJECTS.length - 1 ? PROJECTS[ci + 1] : null;
   return (
     <div>
-      {/* Hero */}
       <section className="min-h-[70vh] flex flex-col justify-end px-6 md:px-10 pb-20 pt-32 relative overflow-hidden" style={{ background: project.hero }}>
         <div className="absolute inset-0 bg-gradient-to-t from-[#0C0C0C] via-transparent to-transparent opacity-80" />
         <div className="relative z-10">
           <AnimateIn delay={0.1}><a href="#/" className="inline-flex items-center gap-2 text-xs font-mono text-white/40 hover:text-lime-400 transition-colors mb-8 tracking-widest uppercase">← Back to Projects</a></AnimateIn>
-          <AnimateIn delay={0.15}><div className="flex gap-2 flex-wrap mb-4">{project.tags.map((t, i) => <span key={t} className={`text-[10px] font-mono px-2.5 py-1 rounded-full ${tagStyle(project.tagColors[i])}`}>{t}</span>)}</div></AnimateIn>
+          <AnimateIn delay={0.15}><div className="flex gap-2 flex-wrap mb-4">{project.tags.map((t) => <span key={t} className="text-[10px] font-mono px-2.5 py-1 rounded-full" style={project.tagStyle}>{t}</span>)}</div></AnimateIn>
           <AnimateIn delay={0.2}><h1 className="text-4xl md:text-6xl lg:text-7xl max-w-4xl leading-[1.05] tracking-tight" style={{ fontFamily: "'Instrument Serif', Georgia, serif", color: "#F0EDE6" }}>{project.title}</h1></AnimateIn>
           <AnimateIn delay={0.25}><p className="text-lg mt-4 max-w-2xl" style={{ color: "#8A8780" }}>{project.subtitle}</p></AnimateIn>
           <AnimateIn delay={0.3}><div className="text-xs font-mono mt-6" style={{ color: "#5A5854" }}>{project.date}</div></AnimateIn>
         </div>
       </section>
-
-      {/* Stats bar */}
       <section className="px-6 md:px-10 py-12 border-b border-white/10" style={{ background: "#141414" }}>
         <div className="flex gap-12 md:gap-20 flex-wrap">
           {project.stats.map((s) => (
@@ -546,16 +477,12 @@ function ProjectPage({ project }) {
           ))}
         </div>
       </section>
-
-      {/* Overview */}
       <section className="px-6 md:px-10 py-20 max-w-3xl">
         <AnimateIn>
           <div className="text-xs font-mono text-lime-400 tracking-[0.15em] uppercase mb-3">Overview</div>
           <p className="text-lg leading-relaxed" style={{ color: "#C0BDB6" }}>{project.overview}</p>
         </AnimateIn>
       </section>
-
-      {/* Sections */}
       {project.sections.map((s, i) => (
         <section key={i} className="px-6 md:px-10 py-16 max-w-3xl" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
           <AnimateIn delay={0.05}>
@@ -564,8 +491,6 @@ function ProjectPage({ project }) {
           </AnimateIn>
         </section>
       ))}
-
-      {/* GitHub CTA */}
       <section className="px-6 md:px-10 py-16 max-w-3xl">
         <AnimateIn>
           <a href={project.github} target="_blank" className="inline-flex items-center gap-3 px-8 py-4 bg-lime-400 text-black font-semibold text-sm rounded-full hover:-translate-y-0.5 hover:shadow-lg hover:shadow-lime-400/25 transition-all">
@@ -574,23 +499,10 @@ function ProjectPage({ project }) {
           </a>
         </AnimateIn>
       </section>
-
-      {/* Prev / Next Navigation */}
       <section className="px-6 md:px-10 py-16 border-t border-white/10 grid grid-cols-1 md:grid-cols-2 gap-6" style={{ background: "#141414" }}>
-        {prev ? (
-          <a href={`#/project/${prev.id}`} className="group p-6 rounded-xl border border-white/10 hover:border-white/20 transition-all">
-            <div className="text-xs font-mono uppercase tracking-widest mb-2" style={{ color: "#5A5854" }}>← Previous</div>
-            <div className="text-lg group-hover:text-lime-400 transition-colors" style={{ fontFamily: "'Instrument Serif', Georgia, serif", color: "#F0EDE6" }}>{prev.title}</div>
-          </a>
-        ) : <div />}
-        {next ? (
-          <a href={`#/project/${next.id}`} className="group p-6 rounded-xl border border-white/10 hover:border-white/20 transition-all text-right">
-            <div className="text-xs font-mono uppercase tracking-widest mb-2" style={{ color: "#5A5854" }}>Next →</div>
-            <div className="text-lg group-hover:text-lime-400 transition-colors" style={{ fontFamily: "'Instrument Serif', Georgia, serif", color: "#F0EDE6" }}>{next.title}</div>
-          </a>
-        ) : <div />}
+        {prev ? (<a href={`#/project/${prev.id}`} className="group p-6 rounded-xl border border-white/10 hover:border-white/20 transition-all"><div className="text-xs font-mono uppercase tracking-widest mb-2" style={{ color: "#5A5854" }}>← Previous</div><div className="text-lg group-hover:text-lime-400 transition-colors" style={{ fontFamily: "'Instrument Serif', Georgia, serif", color: "#F0EDE6" }}>{prev.title}</div></a>) : <div />}
+        {next ? (<a href={`#/project/${next.id}`} className="group p-6 rounded-xl border border-white/10 hover:border-white/20 transition-all text-right"><div className="text-xs font-mono uppercase tracking-widest mb-2" style={{ color: "#5A5854" }}>Next →</div><div className="text-lg group-hover:text-lime-400 transition-colors" style={{ fontFamily: "'Instrument Serif', Georgia, serif", color: "#F0EDE6" }}>{next.title}</div></a>) : <div />}
       </section>
-
       <footer className="px-6 md:px-10 py-10 border-t border-white/10 flex justify-between items-center flex-wrap gap-4 text-xs" style={{ color: "#5A5854" }}>
         <span>© 2026 Kaylee Kim</span>
         <span><a href="https://github.com/kyu976" target="_blank" className="hover:text-lime-400 transition-colors">GitHub</a> · <a href="https://www.linkedin.com/in/kyumin-kim-640444268/" target="_blank" className="hover:text-lime-400 transition-colors">LinkedIn</a></span>
@@ -602,17 +514,14 @@ function ProjectPage({ project }) {
 // ── App Router ──
 function App() {
   const [route, setRoute] = useState(window.location.hash || "#/");
-
   useEffect(() => {
     const handler = () => setRoute(window.location.hash || "#/");
     window.addEventListener("hashchange", handler);
     return () => window.removeEventListener("hashchange", handler);
   }, []);
-
-  const projectMatch = route.match(/^#\/project\/(.+)$/);
-  const page = projectMatch ? "project" : "home";
-  const project = projectMatch ? PROJECTS.find((p) => p.id === projectMatch[1]) : null;
-
+  const m = route.match(/^#\/project\/(.+)$/);
+  const page = m ? "project" : "home";
+  const project = m ? PROJECTS.find((p) => p.id === m[1]) : null;
   return (
     <div className="min-h-screen" style={{ background: "#0C0C0C", fontFamily: "'DM Sans', sans-serif" }}>
       <Nav page={page} />
@@ -620,7 +529,6 @@ function App() {
     </div>
   );
 }
-
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(<App />);
